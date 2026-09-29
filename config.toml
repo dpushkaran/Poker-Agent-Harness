@@ -1,0 +1,23 @@
+# Game and runtime settings. Amounts are in dollars.
+
+[game]
+small_blind = 0.10
+big_blind = 0.20
+min_bet = 0.20
+buy_in = 10.00
+max_players = 7
+chip_increment = 0.10   # smallest chip denomination used for sizing
+
+[llm]
+base_url = "http://localhost:11434"
+model = "qwen3:30b-a3b"
+temperature = 0.2
+timeout_seconds = 60
+max_retries = 1
+
+[equity]
+iterations = 20000
+seed = 0                # 0 = random; set nonzero for reproducible runs
+
+[storage]
+db_path = "poker_agent.db"
