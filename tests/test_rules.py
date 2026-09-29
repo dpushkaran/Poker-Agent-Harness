@@ -139,3 +139,10 @@ def test_hand_over_after_folds():
 def test_bet_exceeding_stack_rejected():
     with pytest.raises(IllegalAction, match="exceeds stack"):
         replay(gs([pf(4, "raise", 12.00)]))
+
+
+def test_snap_rounds_and_clamps():
+    la = legal_actions(gs())
+    assert la.snap(0.63) == 0.60
+    assert la.snap(0.10) == 0.40  # below min raise
+    assert la.snap(50) == 10.00  # above stack

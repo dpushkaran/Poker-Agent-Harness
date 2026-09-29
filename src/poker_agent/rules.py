@@ -252,6 +252,13 @@ class LegalActions(BaseModel):
     hero_stack: float
     hero_committed_street: float
 
+    def snap(self, to: float, increment: float = 0.10) -> float:
+        """Round a bet/raise 'to' amount to the chip increment and clamp it to legal bounds."""
+        if self.min_to is None or self.max_to is None:
+            raise ValueError("no bet or raise is available")
+        snapped = round(round(to / increment) * increment, 2)
+        return min(max(snapped, self.min_to), self.max_to)
+
     def names(self) -> list[str]:
         out = []
         if self.can_fold:
