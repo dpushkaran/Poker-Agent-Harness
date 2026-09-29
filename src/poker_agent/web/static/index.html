@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poker Agent</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #f4f5f2; --surface: #ffffff; --surface-2: #eef0ec; --text: #1c211e; --muted: #5d6660;
+    --border: #d5dad4; --accent: #1f7a4d; --accent-text: #ffffff; --danger: #b3261e;
+    --warn-bg: #fff4d6; --warn-text: #6b4e00; --felt: #1f5c3f; --felt-text: #eaf5ee;
+    --spade: #1c211e; --heart: #c62828; --diamond: #1565c0; --club: #2e7d32;
+    --focus: #1f7a4d55;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121513; --surface: #1b1f1c; --surface-2: #242a26; --text: #e6ebe7; --muted: #9aa59e;
+      --border: #333b36; --accent: #3fb07a; --accent-text: #08130d; --danger: #ef6b61;
+      --warn-bg: #3a3014; --warn-text: #f4d27a; --felt: #173d2b; --felt-text: #dff0e6;
+      --spade: #e6ebe7; --heart: #ff6b6b; --diamond: #64a8ff; --club: #5fd07a;
+      --focus: #3fb07a55;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 12px 16px 80px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .health { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  .dot.ok { background: var(--accent); } .dot.bad { background: var(--danger); }
+  section, details.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  details.card > summary { cursor: pointer; font-weight: 600; list-style: none; }
+  details.card > summary::after { content: "▾"; float: right; color: var(--muted); }
+  details.card[open] > summary { margin-bottom: 10px; }
+  button { font: inherit; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    border-radius: 10px; padding: 10px 12px; min-height: 44px; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--danger); }
+  button:disabled { opacity: .4; cursor: default; }
+  input[type=number], input[type=text] { font: inherit; padding: 8px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface); color: var(--text); width: 100%; min-height: 40px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .grow { flex: 1 1 auto; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .error { color: var(--danger); font-size: 14px; margin-top: 6px; white-space: pre-wrap; }
+  .warn { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 6px 10px; font-size: 14px; margin-top: 6px; }
+
+  /* setup table */
+  .seats { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .seats th { text-align: left; color: var(--muted); font-weight: 500; padding: 4px; }
+  .seats td { padding: 4px; vertical-align: middle; }
+  .seats input[type=number] { width: 78px; }
+  .seats input[type=text] { min-width: 0; }
+  .extra td { padding-top: 0; }
+
+  /* cards */
+  .slots { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .slot { width: 46px; height: 62px; border-radius: 8px; border: 2px dashed var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; padding: 0; min-height: 0; }
+  .slot.filled { border-style: solid; background: #fff; }
+  .slot.pending { border-color: var(--accent); }
+  .slot.target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+  .gap { width: 6px; }
+  .s-s { color: var(--spade); } .s-h { color: var(--heart); } .s-d { color: var(--diamond); } .s-c { color: var(--club); }
+  .slot.filled .s-s { color: #1c211e; } .slot.filled .s-h { color: #c62828; }
+  .slot.filled .s-d { color: #1565c0; } .slot.filled .s-c { color: #2e7d32; }
+
+  /* table strip */
+  .felt { background: var(--felt); color: var(--felt-text); border-radius: 12px; padding: 10px; }
+  .pot { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .players { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+  .pl { border-radius: 8px; padding: 6px; background: #ffffff14; font-size: 13px; line-height: 1.25; border: 2px solid transparent; }
+  .pl.hero { background: #ffffff2a; }
+  .pl.toact { border-color: #ffd54f; }
+  .pl.folded { opacity: .45; }
+  .pl b { font-size: 14px; }
+  .history { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .history div { margin: 2px 0; }
+
+  /* action panel */
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .actions .wide { grid-column: 1 / -1; }
+  .sizes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .sizes button { min-height: 36px; padding: 6px 10px; font-size: 14px; }
+
+  /* recommendation */
+  .rec-action { font-size: 30px; font-weight: 800; letter-spacing: .02em; }
+  .rec-meta { font-size: 13px; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin-top: 10px; }
+  .stat { background: var(--surface-2); border-radius: 8px; padding: 6px 8px; }
+  .stat .k { font-size: 12px; color: var(--muted); } .stat .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+  ul.factors { margin: 6px 0 0 18px; padding: 0; font-size: 14px; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--accent-text); border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* picker */
+  dialog { border: none; border-radius: 14px; padding: 12px; background: var(--surface); color: var(--text); width: min(420px, calc(100vw - 32px)); }
+  dialog::backdrop { background: #0008; }
+  .picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .picker button { min-height: 40px; padding: 4px; font-size: 18px; font-weight: 700; background: var(--surface-2); }
+  .log-item { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Poker Agent</h1>
+    <span class="health"><span id="health-dot" class="dot"></span><span id="health-text">checking model…</span></span>
+  </header>
+
+  <details class="card" id="setup">
+    <summary>Table setup <span class="muted" id="setup-summary"></span></summary>
+    <table class="seats">
+      <thead><tr><th>Seat</th><th>Playing</th><th>Stack</th><th>Hero</th><th>BTN</th><th></th></tr></thead>
+      <tbody id="seat-rows"></tbody>
+    </table>
+    <p class="muted">Blinds <span id="blinds"></span>. Stacks are at the start of the hand; update them between hands. Tap ✎ to add a read or a range for a player.</p>
+  </details>
+
+  <section>
+    <div class="row" style="justify-content: space-between">
+      <h2 style="margin:0">Hand</h2>
+      <div class="row">
+        <button id="undo" class="danger">Undo</button>
+        <button id="new-hand">New hand</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px; gap:14px">
+      <div>
+        <div class="muted">Your cards</div>
+        <div class="slots" id="hole-slots"></div>
+      </div>
+      <div>
+        <div class="muted">Board</div>
+        <div class="slots" id="board-slots"></div>
+      </div>
+    </div>
+    <div id="hand-prompt" class="muted" style="margin-top:8px"></div>
+    <div id="table-error" class="error"></div>
+  </section>
+
+  <section id="table-section" hidden>
+    <div class="felt">
+      <div class="pot" id="pot"></div>
+      <div class="players" id="players"></div>
+    </div>
+    <div id="action-panel"></div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <section id="rec-section" hidden>
+    <div id="rec"></div>
+  </section>
+
+  <details class="card" id="log-card">
+    <summary>Recent decisions</summary>
+    <div id="log"></div>
+  </details>
+</main>
+
+<dialog id="picker-dialog">
+  <div class="row" style="justify-content: space-between; margin-bottom: 8px">
+    <strong id="picker-title">Pick a card</strong>
+    <button id="picker-close">Close</button>
+  </div>
+  <div class="picker" id="picker"></div>
+</dialog>
+
+<script>
+"use strict";
+const RANKS = "AKQJT98765432";
+const SUITS = [["s", "♠"], ["h", "♥"], ["d", "♦"], ["c", "♣"]];
+const STORE_KEY = "poker-agent-v1";
+
+let CONFIG = { small_blind: 0.1, big_blind: 0.2, max_players: 7, chip_increment: 0.1 };
+const S = {
+  setup: null,                  // {seats: [{seat, on, stack, name, note, range}], hero, button}
+  hand: { hole: [], board: [], pending: [], actions: [], id: newHandId() },
+  view: null,                   // last /api/table response
+  rec: null,                    // last recommendation {id, recommendation}
+  busy: false,
+  pickTarget: null,             // "hole" | "board"
+};
+
+function newHandId() { return "h" + Date.now().toString(36); }
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (x) => (x == null ? "–" : Number(x).toFixed(2));
+const pct = (x) => (x == null ? "–" : (x * 100).toFixed(1) + "%");
+
+function cardHTML(c) {
+  const sym = Object.fromEntries(SUITS)[c[1]];
+  return `<span class="s-${c[1]}">${c[0] === "T" ? "10" : c[0]}${sym}</span>`;
+}
+
+// ---- persistence (per-device convenience only) --------------------------
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ setup: S.setup, hand: S.hand })); } catch (e) { /* ignore */ }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.setup) S.setup = data.setup;
+    if (data.hand) S.hand = { pending: [], ...data.hand };
+  } catch (e) { /* ignore */ }
+}
+function defaultSetup() {
+  const seats = [];
+  for (let i = 1; i <= CONFIG.max_players; i++) {
+    seats.push({ seat: i, on: true, stack: CONFIG.buy_in || 10, name: "", note: "", range: "" });
+  }
+  return { seats, hero: 1, button: 1 };
+}
+
+// ---- API ------------------------------------------------------------------
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+  return data;
+}
+
+function gameState() {
+  const on = S.setup.seats.filter((s) => s.on);
+  const notes = {}, ranges = {};
+  for (const s of on) {
+    if (s.seat === S.setup.hero) continue;
+    if (s.note.trim()) notes[s.seat] = s.note.trim();
+    if (s.range.trim()) ranges[s.seat] = s.range.trim();
+  }
+  return {
+    players: on.map((s) => ({ seat: s.seat, stack: Number(s.stack), name: s.name || null })),
+    button_seat: S.setup.button,
+    hero_seat: S.setup.hero,
+    hole_cards: S.hand.hole,
+    board: S.hand.board,
+    actions: S.hand.actions,
+    blinds: { small: CONFIG.small_blind, big: CONFIG.big_blind },
+    opponent_notes: notes,
+    opponent_ranges: ranges,
+  };
+}
+
+async function refresh() {
+  $("table-error").textContent = "";
+  if (S.hand.hole.length < 2) { S.view = null; render(); return true; }
+  try {
+    S.view = await api("/api/table", gameState());
+    render();
+    return true;
+  } catch (e) {
+    $("table-error").textContent = e.message;
+    return false;
+  }
+}
+
+async function addAction(type, amount) {
+  const street = S.view.street;
+  const a = { street, seat: S.view.to_act, type };
+  if (amount != null) a.amount = Math.round(amount * 100) / 100;
+  const heroActed = S.view.hero_to_act;
+  S.hand.actions.push(a);
+  if (!(await refresh())) { S.hand.actions.pop(); await refresh(); }
+  else if (heroActed) { S.rec = null; render(); }  // advice was for the spot just played
+  save();
+}
+
+// ---- setup ----------------------------------------------------------------
+function renderSetup() {
+  const rows = S.setup.seats.map((s) => `
+    <tr data-seat="${s.seat}">
+      <td><b>${s.seat}</b></td>
+      <td><input type="checkbox" data-f="on" ${s.on ? "checked" : ""} aria-label="seat ${s.seat} playing"></td>
+      <td><input type="number" step="0.1" min="0.1" data-f="stack" value="${s.stack}" aria-label="seat ${s.seat} stack"></td>
+      <td><input type="radio" name="hero" data-f="hero" ${S.setup.hero === s.seat ? "checked" : ""} aria-label="hero seat ${s.seat}"></td>
+      <td><input type="radio" name="button" data-f="button" ${S.setup.button === s.seat ? "checked" : ""} aria-label="button seat ${s.seat}"></td>
+      <td><button data-f="more" style="min-height:32px;padding:2px 8px" aria-label="notes for seat ${s.seat}">✎</button></td>
+    </tr>
+    <tr class="extra" data-seat="${s.seat}" ${s.note || s.range ? "" : "hidden"}>
+      <td></td>
+      <td colspan="5">
+        <input type="text" data-f="name" placeholder="Name" value="${esc(s.name)}" style="margin-bottom:4px">
+        <input type="text" data-f="note" placeholder="Read, e.g. calls too much" value="${esc(s.note)}" style="margin-bottom:4px">
+        <input type="text" data-f="range" placeholder="Range override, e.g. 22+, A2s+, KTo+" value="${esc(s.range)}">
+      </td>
+    </tr>`).join("");
+  $("seat-rows").innerHTML = rows;
+  const on = S.setup.seats.filter((s) => s.on).length;
+  $("setup-summary").textContent = `· ${on} players · hero seat ${S.setup.hero} · button ${S.setup.button}`;
+  $("blinds").textContent = `${money(CONFIG.small_blind)}/${money(CONFIG.big_blind)}`;
+}
+
+$("seat-rows").addEventListener("input", onSetupChange);
+$("seat-rows").addEventListener("click", (e) => {
+  if (e.target.dataset.f !== "more") return;
+  const seat = e.target.closest("tr").dataset.seat;
+  const extra = document.querySelector(`tr.extra[data-seat="${seat}"]`);
+  extra.hidden = !extra.hidden;
+});
+function onSetupChange(e) {
+  const tr = e.target.closest("tr");
+  if (!tr) return;
+  const s = S.setup.seats.find((x) => x.seat === Number(tr.dataset.seat));
+  const f = e.target.dataset.f;
+  if (f === "on") s.on = e.target.checked;
+  else if (f === "stack") s.stack = e.target.value;
+  else if (f === "hero") S.setup.hero = s.seat;
+  else if (f === "button") S.setup.button = s.seat;
+  else if (f === "name" || f === "note" || f === "range") s[f] = e.target.value;
+  save();
+  if (["on", "hero", "button"].includes(f)) {
+    renderSetup();
+    if (S.hand.actions.length) { S.hand.actions = []; S.hand.board = []; S.rec = null; }
+  }
+  clearTimeout(onSetupChange.t);
+  onSetupChange.t = setTimeout(refresh, 250);
+}
+
+// ---- cards ----------------------------------------------------------------
+function usedCards() { return new Set([...S.hand.hole, ...S.hand.board, ...S.hand.pending]); }
+
+function renderSlots() {
+  const hole = [0, 1].map((i) => {
+    const c = S.hand.hole[i];
+    const target = S.pickTarget === "hole" && !c ? " target" : "";
+    return `<button class="slot${c ? " filled" : ""}${target}" data-kind="hole" data-i="${i}" aria-label="hole card ${i + 1}">${c ? cardHTML(c) : ""}</button>`;
+  }).join("");
+  $("hole-slots").innerHTML = hole;
+  const need = S.view?.needs_board || 0;
+  const slots = [];
+  for (let i = 0; i < 5; i++) {
+    if (i === 3 || i === 4) slots.push('<span class="gap"></span>');
+    const c = S.hand.board[i];
+    const p = S.hand.pending[i - S.hand.board.length];
+    const open = !c && i < S.hand.board.length + need;
+    const cls = c ? " filled" : p ? " filled pending" : open ? " target" : "";
+    const face = c || p;
+    slots.push(`<button class="slot${cls}" data-kind="board" data-i="${i}" aria-label="board card ${i + 1}" ${!c && !open ? "disabled" : ""}>${face ? cardHTML(face) : ""}</button>`);
+  }
+  $("board-slots").innerHTML = slots.join("");
+}
+
+document.addEventListener("click", (e) => {
+  const slot = e.target.closest(".slot");
+  if (!slot) return;
+  const kind = slot.dataset.kind, i = Number(slot.dataset.i);
+  if (kind === "hole") {
+    if (S.hand.hole[i]) {
+      if (S.hand.actions.length && !confirm("Changing your cards keeps the actions. Continue?")) return;
+      S.hand.hole.splice(i, 1);
+      S.rec = null; save(); refresh();
+    }
+    openPicker("hole");
+  } else {
+    if (S.hand.board[i]) {
+      const street = i < 3 ? "flop" : i === 3 ? "turn" : "river";
+      if (!confirm(`Remove the ${street} and every action after it?`)) return;
+      const keep = i < 3 ? 0 : i;
+      const streets = ["flop", "turn", "river"].slice(keep === 0 ? 0 : keep - 2);
+      S.hand.board = S.hand.board.slice(0, keep);
+      S.hand.actions = S.hand.actions.filter((a) => !streets.includes(a.street));
+      S.hand.pending = []; S.rec = null; save(); refresh();
+      return;
+    }
+    openPicker("board");
+  }
+});
+
+function openPicker(target) {
+  S.pickTarget = target;
+  $("picker-title").textContent = target === "hole" ? "Your cards" : `Deal the ${S.view?.street === "preflop" ? "flop" : S.view?.street === "flop" ? "turn" : "river"}`;
+  renderPicker();
+  renderSlots();
+  if (!$("picker-dialog").open) $("picker-dialog").showModal();
+}
+function renderPicker() {
+  const used = usedCards();
+  let html = "";
+  for (const r of RANKS) {
+    for (const [s] of SUITS) {
+      const c = r + s;
+      html += `<button data-card="${c}" ${used.has(c) ? "disabled" : ""}>${cardHTML(c)}</button>`;
+    }
+  }
+  $("picker").innerHTML = html;
+}
+$("picker").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-card]");
+  if (!b) return;
+  const c = b.dataset.card;
+  if (S.pickTarget === "hole") {
+    S.hand.hole.push(c);
+    if (S.hand.hole.length >= 2) { closePicker(); save(); await refresh(); return; }
+  } else {
+    S.hand.pending.push(c);
+    const need = S.view?.needs_board || 0;
+    if (S.hand.pending.length >= need) {
+      S.hand.board = [...S.hand.board, ...S.hand.pending];
+      S.hand.pending = [];
+      closePicker(); save(); await refresh(); return;
+    }
+  }
+  renderPicker(); renderSlots();
+});
+function closePicker() {
+  S.pickTarget = null; S.hand.pending = [];
+  if ($("picker-dialog").open) $("picker-dialog").close();
+  renderSlots();
+}
+$("picker-close").addEventListener("click", closePicker);
+$("picker-dialog").addEventListener("close", () => { S.pickTarget = null; S.hand.pending = []; renderSlots(); });
+
+// ---- table and actions -----------------------------------------------------
+function render() {
+  renderSlots();
+  const v = S.view;
+  const prompt = $("hand-prompt");
+  $("table-section").hidden = !v;
+  if (!v) {
+    prompt.textContent = S.hand.hole.length < 2 ? "Tap your card slots to enter your hole cards." : "";
+    renderRec();
+    return;
+  }
+  prompt.textContent = v.hand_over ? "Hand is over — start a new hand."
+    : v.needs_board ? `Betting round closed. Tap the board to deal the ${v.street === "preflop" ? "flop" : v.street === "flop" ? "turn" : "river"}.`
+    : v.round_closed ? "Hand complete (river betting closed)." : "";
+
+  $("pot").textContent = `${v.street.toUpperCase()} · Pot ${money(v.pot)}`;
+  $("players").innerHTML = v.seats.map((s) => {
+    const cls = ["pl", s.hero && "hero", s.folded && "folded", v.to_act === s.seat && "toact"].filter(Boolean).join(" ");
+    const name = S.setup.seats.find((x) => x.seat === s.seat)?.name;
+    const tag = s.folded ? "folded" : s.all_in ? "all-in" : s.committed_street ? `in ${money(s.committed_street)}` : "";
+    return `<div class="${cls}"><b>${s.position}</b>${s.hero ? " · you" : ""}<br>
+      <span>${esc(name || "Seat " + s.seat)}</span><br>${money(s.stack)} <span style="opacity:.8">${tag}</span></div>`;
+  }).join("");
+  $("history").innerHTML = v.history.map((h) => `<div>${esc(h)}</div>`).join("");
+  renderActions();
+  renderRec();
+}
+
+function sizeTo(frac) {
+  const o = S.view.options, pot = S.view.pot;
+  const raw = o.can_bet ? frac * pot : o.hero_committed_street + o.call_amount + frac * (pot + o.call_amount);
+  const inc = CONFIG.chip_increment;
+  return Math.min(Math.max(Math.round(raw / inc) * inc, o.min_to), o.max_to);
+}
+
+function renderActions() {
+  const v = S.view, panel = $("action-panel");
+  if (!v.to_act || !v.options) { panel.innerHTML = ""; return; }
+  const o = v.options;
+  const seat = v.seats.find((s) => s.seat === v.to_act);
+  const who = seat.hero ? "You" : `Seat ${seat.seat} (${seat.position})`;
+  const aggr = o.can_bet ? "Bet" : o.can_raise ? "Raise to" : null;
+  let html = `<div class="row" style="margin-top:10px;justify-content:space-between"><strong>${who} to act</strong>`;
+  if (!seat.hero && v.street === "preflop" && !v.seats.find((s) => s.hero).folded) {
+    html += `<button id="fold-to-me">Everyone folds to me</button>`;
+  }
+  html += `</div>`;
+  if (seat.hero) {
+    html += `<div class="actions"><button class="primary wide" id="get-rec">${S.busy ? '<span class="spinner"></span> Thinking…' : "Get recommendation"}</button></div>
+             <div class="muted" style="margin-top:6px">Then record what you actually did:</div>`;
+  }
+  html += `<div class="actions">`;
+  if (o.can_fold) html += `<button data-act="fold">Fold</button>`;
+  if (o.can_check) html += `<button data-act="check">Check</button>`;
+  if (o.can_call) html += `<button data-act="call">Call ${money(o.call_amount)}</button>`;
+  if (o.can_bet || o.can_raise || o.can_call) {
+    html += `<button data-act="all_in">All-in ${money(o.hero_stack + o.hero_committed_street)}</button>`;
+  }
+  if (aggr) {
+    const def = sizeTo(o.can_bet ? 0.5 : 0);
+    html += `<div class="wide"><div class="row"><input type="number" id="amt" step="${CONFIG.chip_increment}" min="${o.min_to}" max="${o.max_to}" value="${def.toFixed(2)}" class="grow" aria-label="amount">
+      <button data-act="${o.can_bet ? "bet" : "raise"}" class="grow">${aggr}</button></div>
+      <div class="sizes"><button data-size="min">Min ${money(o.min_to)}</button><button data-size="0.5">½ pot</button>
+      <button data-size="0.66">⅔ pot</button><button data-size="1">Pot</button></div></div>`;
+  }
+  html += `</div>`;
+  panel.innerHTML = html;
+}
+
+$("action-panel").addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b || S.busy) return;
+  if (b.id === "get-rec") return getRecommendation();
+  if (b.id === "fold-to-me") return foldToMe();
+  if (b.dataset.size) {
+    const o = S.view.options;
+    $("amt").value = (b.dataset.size === "min" ? o.min_to : sizeTo(Number(b.dataset.size))).toFixed(2);
+    return;
+  }
+  const act = b.dataset.act;
+  if (!act) return;
+  if (act === "bet" || act === "raise") {
+    const amt = Number($("amt").value);
+    if (!(amt > 0)) { $("table-error").textContent = "Enter an amount"; return; }
+    await addAction(act, amt);
+  } else {
+    await addAction(act);
+  }
+});
+
+async function foldToMe() {
+  for (let guard = 0; guard < 12 && S.view?.to_act && !S.view.hero_to_act; guard++) {
+    const before = S.hand.actions.length;
+    await addAction("fold");
+    if (S.hand.actions.length === before) break;
+  }
+}
+
+$("undo").addEventListener("click", async () => {
+  if (S.hand.pending.length) { S.hand.pending = []; }
+  else if (S.hand.actions.length) {
+    const last = S.hand.actions[S.hand.actions.length - 1];
+    const boardLen = { preflop: 0, flop: 3, turn: 4, river: 5 }[last.street];
+    if (S.hand.board.length > boardLen) { S.hand.board = S.hand.board.slice(0, boardLen); }
+    else { S.hand.actions.pop(); }
+  } else if (S.hand.board.length) { S.hand.board = []; }
+  else if (S.hand.hole.length) { S.hand.hole.pop(); }
+  S.rec = null;
+  save(); await refresh();
+});
+
+$("new-hand").addEventListener("click", async () => {
+  if (S.hand.actions.length && !confirm("Start a new hand? The button moves one seat.")) return;
+  const on = S.setup.seats.filter((s) => s.on).map((s) => s.seat).sort((a, b) => a - b);
+  const i = on.indexOf(S.setup.button);
+  S.setup.button = on[(i + 1) % on.length] ?? on[0];
+  S.hand = { hole: [], board: [], pending: [], actions: [], id: newHandId() };
+  S.rec = null;
+  renderSetup(); save(); await refresh();
+  openPicker("hole");
+});
+
+// ---- recommendation ----------------------------------------------------------
+async function getRecommendation() {
+  S.busy = true; renderActions();
+  try {
+    S.rec = await api("/api/decide", { state: gameState(), hand_id: S.hand.id });
+    loadLog();
+  } catch (e) {
+    $("table-error").textContent = e.message;
+  } finally {
+    S.busy = false; render();
+    $("rec-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function renderRec() {
+  const sec = $("rec-section");
+  if (!S.rec) { sec.hidden = true; return; }
+  sec.hidden = false;
+  const r = S.rec.recommendation, d = r.decision, a = r.analysis;
+  const amt = d.amount != null ? ` to ${money(d.amount)}` : d.action === "call" ? ` ${money(a.legal.call_amount)}` : "";
+  const src = r.source === "llm" ? r.model : r.source === "fallback" ? "baseline (LLM unavailable)" : "baseline";
+  const b = r.baseline;
+  const baseline = r.source === "llm" && (b.action !== d.action || b.amount !== d.amount)
+    ? `<div class="muted" style="margin-top:6px">Rule-based baseline would ${b.action.replace("_", "-")}${b.amount != null ? " to " + money(b.amount) : ""}.</div>` : "";
+  const stats = [
+    ["Hand", a.strength.description],
+    ["Draws", a.strength.draws.join(", ") || "none"],
+    ["Equity", `${pct(a.equity.equity)}`],
+    ["Pot odds", a.odds.pot_odds ? pct(a.odds.pot_odds) : "no bet"],
+    ["Pot", money(a.odds.pot)],
+    ["To call", money(a.odds.to_call)],
+    ["SPR", a.odds.spr],
+    ["Outs", a.strength.outs || "–"],
+  ].map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join("");
+  const opps = a.opponents.filter((o) => o.in_equity_calc)
+    .map((o) => `${o.position}: ${esc(o.range_label)}${o.narrowed_by.length ? " (" + esc(o.narrowed_by.join(", ")) + ")" : ""}`).join("<br>");
+  const warns = [...a.warnings, ...(r.source === "fallback" ? r.errors : []), ...r.adjustments]
+    .map((w) => `<div class="warn">${esc(w)}</div>`).join("");
+  $("rec").innerHTML = `
+    <div class="rec-action">${d.action.replace("_", "-").toUpperCase()}${amt}</div>
+    <div class="rec-meta">${esc(src)} · confidence ${d.confidence} · ${r.total_latency_s.toFixed(1)}s</div>
+    <p>${esc(d.reasoning)}</p>
+    ${d.key_factors.length ? `<ul class="factors">${d.key_factors.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+    ${baseline}
+    <div class="stats">${stats}</div>
+    <div class="muted" style="margin-top:8px">Equity ${esc(a.equity_basis)}${opps ? "<br>" + opps : ""}</div>
+    ${warns}
+    <div class="row" style="margin-top:10px">
+      <span class="muted grow">Did you follow it?</span>
+      <button data-follow="1">Yes</button><button data-follow="0">No</button>
+    </div>`;
+}
+$("rec").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-follow]");
+  if (!b || !S.rec) return;
+  try {
+    await api(`/api/review/${S.rec.id}`, { followed: b.dataset.follow === "1" });
+    b.parentElement.querySelector(".muted").textContent = "Saved.";
+    loadLog();
+  } catch (err) { $("table-error").textContent = err.message; }
+});
+
+// ---- log & health ---------------------------------------------------------
+async function loadLog() {
+  try {
+    const rows = await api("/api/log?limit=10");
+    $("log").innerHTML = rows.length ? rows.map((r) => `<div class="log-item">#${r.id} ${esc(r.street)} ${esc(r.hero_cards)} ${esc(r.board)} → <b>${esc(r.action)}${r.amount != null ? " " + money(r.amount) : ""}</b> <span class="muted">${esc(r.source)}${r.followed === 1 ? " · followed" : r.followed === 0 ? " · ignored" : ""}</span></div>`).join("")
+      : '<div class="muted">No decisions yet.</div>';
+  } catch (e) { /* ignore */ }
+}
+async function checkHealth() {
+  try {
+    const h = await api("/api/health");
+    $("health-dot").className = "dot " + (h.ok ? "ok" : "bad");
+    $("health-text").textContent = h.ok ? h.model : h.message;
+  } catch (e) {
+    $("health-dot").className = "dot bad";
+    $("health-text").textContent = "server unreachable";
+  }
+}
+
+(async function init() {
+  try { CONFIG = await api("/api/config"); } catch (e) { /* use defaults */ }
+  load();
+  if (!S.setup) { S.setup = defaultSetup(); $("setup").open = true; }
+  renderSetup();
+  await refresh();
+  checkHealth();
+  loadLog();
+})();
+</script>
+</body>
+</html>

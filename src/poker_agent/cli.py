@@ -144,6 +144,27 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    import socket
+
+    import uvicorn
+
+    from poker_agent.web.app import create_app
+
+    settings = load_settings(args.config)
+    app = create_app(settings)
+    if args.host == "0.0.0.0":
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("10.255.255.255", 1))
+                print(f"Open http://{s.getsockname()[0]}:{args.port} on your phone "
+                      "(same Wi-Fi network)")
+        except OSError:
+            pass
+    uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="poker-agent", description=__doc__)
     p.add_argument("--config", default=None, help="path to config.toml")
@@ -170,6 +191,11 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--baseline-only", action="store_true")
     e.add_argument("--scenarios", default="eval/scenarios")
     e.set_defaults(func=cmd_eval)
+
+    sv = sub.add_parser("serve", help="run the web UI")
+    sv.add_argument("--host", default="127.0.0.1", help="use 0.0.0.0 to allow phones on the LAN")
+    sv.add_argument("--port", type=int, default=8000)
+    sv.set_defaults(func=cmd_serve)
 
     lg = sub.add_parser("log", help="list logged decisions, or review one")
     lg.add_argument("--limit", type=int, default=20)
