@@ -79,3 +79,9 @@ def test_cli_reports_bad_state(tmp_path, capsys):
                  "button_seat: 1\nhero_seat: 2\nhole_cards: AhKd\n")
     assert main(["decide", "--baseline", str(f)]) == 2
     assert "not hero's turn" in capsys.readouterr().err
+
+
+def test_no_isolation_raise_with_speculative_hand_into_many_limpers():
+    acts = [("preflop", s, "call") for s in (4, 5, 6, 7, 1)]
+    d = decide(spot("9h8h", acts, hero=2))
+    assert d.action is Move.CALL

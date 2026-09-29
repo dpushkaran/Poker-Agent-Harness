@@ -18,6 +18,11 @@ from poker_agent.math.ranges import (
 from poker_agent.state import ActionType, GameState, Street
 
 PREMIUM = "QQ+, AKs, AKo"
+# Isolation-raise ranges shrink as more players limp in (index = limpers, capped).
+ISO_RANGES = {
+    1: "66+, A9s+, KTs+, QJs, AJo+, KQo",
+    2: "88+, AJs+, KQs, AQo+",
+}
 STRONG = "TT+, AQs+, AKo"
 LATE = ("CO", "BTN", "SB")
 ALL_IN_THRESHOLD = 0.7  # shove instead of betting more than this share of the stack
@@ -67,6 +72,8 @@ def _preflop(state: GameState, a: Analysis) -> Decision:
 
     if raises == 0:
         open_range = OPEN_RANGES.get(pos, OPEN_RANGES["BTN"])
+        if limpers:
+            open_range = ISO_RANGES[min(limpers, 2)]
         if can_raise and _in(state, open_range):
             size = (3 + limpers) * bb
             why = f"Hand is in the {pos} opening range" + (f"; isolate {limpers} limper(s)." if limpers else ".")
