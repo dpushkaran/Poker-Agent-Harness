@@ -25,6 +25,7 @@ class LLMConfig(BaseModel):
     timeout_seconds: float = 60
     max_retries: int = 1
     think: bool = False
+    max_tokens: int = 600
     constrain_actions: bool = True
     prompt_version: str = "v1"
 

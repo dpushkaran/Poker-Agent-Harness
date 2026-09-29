@@ -39,6 +39,7 @@ class OllamaClient:
         temperature: float = 0.2,
         think: bool = False,
         seed: int | None = None,
+        max_tokens: int | None = None,
     ) -> ChatResult:
         body: dict = {
             "model": self.model,
@@ -51,6 +52,9 @@ class OllamaClient:
             body["format"] = schema
         if seed is not None:
             body["options"]["seed"] = seed
+        if max_tokens is not None:
+            # Caps runaway generations (e.g. endless whitespace under a JSON grammar).
+            body["options"]["num_predict"] = max_tokens
         start = time.perf_counter()
         try:
             r = self._http.post("/api/chat", json=body)

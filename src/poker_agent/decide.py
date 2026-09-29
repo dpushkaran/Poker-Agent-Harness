@@ -26,7 +26,7 @@ class ChatClient(Protocol):
     model: str
 
     def chat(self, messages: list[dict], schema: dict | None = ..., temperature: float = ...,
-             think: bool = ..., seed: int | None = ...) -> ChatResult: ...
+             think: bool = ..., seed: int | None = ..., max_tokens: int | None = ...) -> ChatResult: ...
 
 
 class Recommendation(BaseModel):
@@ -76,7 +76,8 @@ def decide(
         rec.attempts = attempt + 1
         try:
             reply = client.chat(messages, schema=schema, temperature=cfg.temperature,
-                                think=cfg.think, seed=seed)
+                                think=cfg.think, seed=seed,
+                                max_tokens=cfg.max_tokens * (6 if cfg.think else 1))
         except LLMError as e:
             rec.errors.append(str(e))
             break

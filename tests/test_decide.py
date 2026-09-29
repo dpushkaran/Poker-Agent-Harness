@@ -26,7 +26,7 @@ class FakeClient:
         self.replies = list(replies)
         self.calls = []
 
-    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None):
+    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None, max_tokens=None):
         self.calls.append(messages)
         r = self.replies.pop(0)
         if isinstance(r, Exception):

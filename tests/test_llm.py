@@ -29,12 +29,12 @@ def test_chat_sends_schema_and_parses_reply():
         })
 
     res = client_with(handler).chat([{"role": "user", "content": "hi"}], schema={"type": "object"},
-                                    seed=1)
+                                    seed=1, max_tokens=50)
     assert res.content == '{"action": "call"}'
     assert res.output_tokens == 20
     assert seen["format"] == {"type": "object"}
     assert seen["stream"] is False and seen["think"] is False
-    assert seen["options"] == {"temperature": 0.2, "seed": 1}
+    assert seen["options"] == {"temperature": 0.2, "seed": 1, "num_predict": 50}
 
 
 def test_chat_errors_are_llm_errors():

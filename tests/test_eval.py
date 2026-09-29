@@ -30,7 +30,7 @@ def test_filters():
 class AlwaysFold:
     model = "folder"
 
-    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None):
+    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None, max_tokens=None):
         action = "fold" if "fold" in schema["properties"]["action"]["enum"] else "check"
         return ChatResult(json.dumps({"reasoning": "r", "key_factors": [], "action": action,
                                       "amount": None, "confidence": "low"}), 0.01, 1, 1)

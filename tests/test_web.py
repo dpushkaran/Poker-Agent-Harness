@@ -11,7 +11,7 @@ from poker_agent.web.app import create_app
 class FakeLLM:
     model = "fake"
 
-    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None):
+    def chat(self, messages, schema=None, temperature=0.2, think=False, seed=None, max_tokens=None):
         return ChatResult(json.dumps({"reasoning": "fine", "key_factors": ["x"], "action": "call",
                                       "amount": None, "confidence": "high"}), 0.01, 1, 1)
 
