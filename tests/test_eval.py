@@ -42,7 +42,7 @@ def test_run_eval_scores_and_reports(tmp_path):
                        client_factory=lambda s: AlwaysFold(), progress=lambda *_: None)
     rows = {r["setting"]: r for r in summarize(records)}
     assert rows["baseline"]["action_agreement"] == 1.0
-    model = rows["folder [v1]"]
+    model = rows["folder [v2]"]
     assert model["runs"] == 4 and model["action_agreement"] == 0.5
     assert model["consistency"] == 1.0 and model["fallback_rate"] == 0.0
     report = render_report(records, scenarios, SETTINGS, 2)

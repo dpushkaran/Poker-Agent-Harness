@@ -80,3 +80,29 @@ def test_action_history_all_streets():
     lines = action_history(st)
     assert lines[0].startswith("Blinds: SB(1) posts 0.10")
     assert lines[-1] == "Flop: MP(4) bets 0.80"
+
+
+def _scenario_prompt(sid, version="v2"):
+    from poker_agent.eval.runner import load_scenarios
+
+    sc = load_scenarios(ids=[sid])[0]
+    a = analyze(sc.state, EquityConfig(iterations=500, seed=1))
+    return build_messages(sc.state, a, version)[1]["content"]
+
+
+def test_v2_limped_pot_guidance():
+    text = _scenario_prompt("pf-co-isolate-aqo")
+    assert "PREFLOP: 2 limper(s), nobody has raised. Chart guidance: hand is in the isolation" in text
+    assert "would be a limp" in text and "Equity minus pot odds" not in text
+    assert "standard raise (3bb + 1bb per limper): raise to 1.00" in text
+
+
+def test_v2_facing_raise_and_postflop_sizes():
+    assert "premium hand: re-raise for value" in _scenario_prompt("pf-kk-3bet-vs-utg")
+    text = _scenario_prompt("f-cbet-top-pair-dry")
+    assert "- 2/3 pot: bet to 0.90" in text and "PREFLOP" not in text
+
+
+def test_v1_prompt_unchanged():
+    text = _scenario_prompt("pf-co-isolate-aqo", "v1")
+    assert "SIZE OPTIONS" not in text and "PREFLOP:" not in text

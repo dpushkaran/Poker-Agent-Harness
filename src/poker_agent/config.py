@@ -27,7 +27,7 @@ class LLMConfig(BaseModel):
     think: bool = False
     max_tokens: int = 600
     constrain_actions: bool = True
-    prompt_version: str = "v1"
+    prompt_version: str = "v2"
 
 
 class EquityConfig(BaseModel):

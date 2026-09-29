@@ -17,7 +17,7 @@ max_retries = 1
 max_tokens = 600           # output cap per reply (thinking models need more, e.g. 4000)
 think = false              # let thinking models reason first (slower, ~+10s)
 constrain_actions = true   # restrict the schema's action enum to legal moves
-prompt_version = "v1"
+prompt_version = "v2"
 
 [equity]
 iterations = 20000
