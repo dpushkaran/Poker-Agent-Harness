@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel
 
-from poker_agent.state import ActionType, GameState, Street
+from poker_agent.state import Action, ActionType, GameState, Street
 
 
 class IllegalAction(ValueError):
@@ -71,6 +71,7 @@ class TableState:
     acted_since_full_raise: set[int] = field(default_factory=set)
     acted_this_round: set[int] = field(default_factory=set)
     pointer: int = 0  # seat that acted last (or the seat before the first actor)
+    log: list[tuple[Action, int]] = field(default_factory=list)  # action, street total after it
 
     @property
     def pot(self) -> int:
@@ -181,7 +182,12 @@ def replay(state: GameState) -> TableState:
     return table
 
 
-def _apply(table: TableState, a) -> None:
+def _apply(table: TableState, a: Action) -> None:
+    _apply_rules(table, a)
+    table.log.append((a, table.seats[a.seat].committed_street))
+
+
+def _apply_rules(table: TableState, a: Action) -> None:
     where = f"{a.street.value}, seat {a.seat}"
     if table.hand_over:
         raise IllegalAction(f"{where}: hand is already over")

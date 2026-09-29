@@ -24,6 +24,9 @@ class LLMConfig(BaseModel):
     temperature: float = 0.2
     timeout_seconds: float = 60
     max_retries: int = 1
+    think: bool = False
+    constrain_actions: bool = True
+    prompt_version: str = "v1"
 
 
 class EquityConfig(BaseModel):

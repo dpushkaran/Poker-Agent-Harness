@@ -14,6 +14,9 @@ model = "qwen3:30b-a3b"
 temperature = 0.2
 timeout_seconds = 60
 max_retries = 1
+think = false              # let thinking models reason first (slower, ~+10s)
+constrain_actions = true   # restrict the schema's action enum to legal moves
+prompt_version = "v1"
 
 [equity]
 iterations = 20000
