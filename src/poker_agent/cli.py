@@ -79,10 +79,42 @@ def cmd_decide(args: argparse.Namespace) -> int:
     except (IllegalAction, NotHerosTurn, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
+    if args.log:
+        from poker_agent.store import Store
+
+        rec_id = Store(settings.storage.db_path).log(state, rec)
+        print(f"logged as decision #{rec_id}", file=sys.stderr)
     if args.json:
         print(json.dumps(rec.model_dump(mode="json"), indent=2))
     else:
         print(format_recommendation(rec))
+    return 0
+
+
+def cmd_log(args: argparse.Namespace) -> int:
+    from poker_agent.store import Store
+
+    store = Store(load_settings(args.config).storage.db_path)
+    if args.review is not None:
+        followed = {"yes": True, "no": False}.get(args.followed) if args.followed else None
+        store.review(args.review, followed=followed, note=args.note)
+        return 0
+    for r in store.recent(args.limit):
+        amt = f" {r['amount']:.2f}" if r["amount"] is not None else ""
+        followed = {1: " followed", 0: " ignored"}.get(r["followed"], "")
+        note = f"  -- {r['note']}" if r["note"] else ""
+        print(f"#{r['id']:<4} {r['created_at']}  {r['street']:<7} {r['hero_cards']:<5} "
+              f"{r['board']:<10} {r['action']}{amt} [{r['source']}]{followed}{note}")
+    return 0
+
+
+def cmd_export(args: argparse.Namespace) -> int:
+    from poker_agent.store import Store, export_scenario
+
+    store = Store(load_settings(args.config).storage.db_path)
+    sc = export_scenario(store, args.id, args.acceptable, Path(args.out), best=args.best,
+                         scenario_id=args.name)
+    print(f"added scenario {sc['id']} to {args.out}")
     return 0
 
 
@@ -123,6 +155,7 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--baseline", action="store_true", help="skip the LLM, use the rule policy")
     d.add_argument("--model", help="override the Ollama model from config")
     d.add_argument("--think", action="store_true", help="enable model thinking (slower)")
+    d.add_argument("--log", action="store_true", help="save the decision to the SQLite log")
     d.set_defaults(func=cmd_decide)
 
     e = sub.add_parser("eval", help="score models on labeled scenarios")
@@ -137,6 +170,21 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--baseline-only", action="store_true")
     e.add_argument("--scenarios", default="eval/scenarios")
     e.set_defaults(func=cmd_eval)
+
+    lg = sub.add_parser("log", help="list logged decisions, or review one")
+    lg.add_argument("--limit", type=int, default=20)
+    lg.add_argument("--review", type=int, metavar="ID", help="decision id to annotate")
+    lg.add_argument("--followed", choices=["yes", "no"])
+    lg.add_argument("--note", help="review note, e.g. the outcome")
+    lg.set_defaults(func=cmd_log)
+
+    ex = sub.add_parser("export", help="turn a logged decision into an eval scenario")
+    ex.add_argument("id", type=int)
+    ex.add_argument("--acceptable", required=True, type=lambda v: v.split(","))
+    ex.add_argument("--best")
+    ex.add_argument("--name", help="scenario id (default logged-<id>)")
+    ex.add_argument("--out", default="eval/scenarios/logged.yaml")
+    ex.set_defaults(func=cmd_export)
     return p
 
 
