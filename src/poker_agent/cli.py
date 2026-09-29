@@ -9,9 +9,9 @@ from pathlib import Path
 
 import yaml
 
-from poker_agent.analysis import Analysis, analyze
-from poker_agent.baseline import baseline_decision
+from poker_agent.analysis import Analysis
 from poker_agent.config import load_settings
+from poker_agent.decide import Recommendation, decide
 from poker_agent.decision import Decision
 from poker_agent.rules import IllegalAction, NotHerosTurn
 from poker_agent.state import GameState
@@ -52,22 +52,37 @@ def format_decision(d: Decision, source: str) -> str:
     return "\n".join(lines)
 
 
+def format_recommendation(rec: Recommendation) -> str:
+    source = f"{rec.source}: {rec.model}" if rec.model and rec.source == "llm" else rec.source
+    out = [format_analysis(rec.analysis), format_decision(rec.decision, source)]
+    if rec.source == "llm" and rec.baseline.action != rec.decision.action:
+        b = rec.baseline
+        out.append(f"   (baseline would {b.action.value}"
+                   + (f" to {b.amount:.2f}" if b.amount is not None else "") + ")")
+    out += [f"   note: {x}" for x in rec.adjustments]
+    if rec.source == "fallback":
+        out += [f"   llm problem: {x}" for x in rec.errors]
+    if rec.model:
+        out.append(f"   [{rec.total_latency_s:.1f}s total, {rec.attempts} attempt(s)]")
+    return "\n".join(out)
+
+
 def cmd_decide(args: argparse.Namespace) -> int:
     settings = load_settings(args.config)
+    if args.model:
+        settings.llm.model = args.model
+    if args.think:
+        settings.llm.think = True
     try:
         state = load_state(args.file)
-        analysis = analyze(state, settings.equity)
+        rec = decide(state, settings, use_llm=not args.baseline)
     except (IllegalAction, NotHerosTurn, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
-    decision = baseline_decision(state, analysis)
     if args.json:
-        print(json.dumps({"analysis": analysis.model_dump(mode="json"),
-                          "decision": decision.model_dump(mode="json"),
-                          "source": "baseline"}, indent=2))
+        print(json.dumps(rec.model_dump(mode="json"), indent=2))
     else:
-        print(format_analysis(analysis))
-        print(format_decision(decision, "baseline"))
+        print(format_recommendation(rec))
     return 0
 
 
@@ -79,6 +94,9 @@ def build_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("decide", help="recommend an action for a hand described in YAML")
     d.add_argument("file")
     d.add_argument("--json", action="store_true", help="print machine-readable JSON")
+    d.add_argument("--baseline", action="store_true", help="skip the LLM, use the rule policy")
+    d.add_argument("--model", help="override the Ollama model from config")
+    d.add_argument("--think", action="store_true", help="enable model thinking (slower)")
     d.set_defaults(func=cmd_decide)
     return p
 

@@ -68,7 +68,7 @@ def test_flop_draw_fixture_is_legal():
 
 
 def test_cli_decide_runs(capsys):
-    assert main(["decide", str(FIX / "flop_draw.yaml")]) == 0
+    assert main(["decide", "--baseline", str(FIX / "flop_draw.yaml")]) == 0
     out = capsys.readouterr().out
     assert "nut flush draw" in out and "=>" in out
 
@@ -77,5 +77,5 @@ def test_cli_reports_bad_state(tmp_path, capsys):
     f = tmp_path / "bad.yaml"
     f.write_text("players: [{seat: 1, stack: 10}, {seat: 2, stack: 10}]\n"
                  "button_seat: 1\nhero_seat: 2\nhole_cards: AhKd\n")
-    assert main(["decide", str(f)]) == 2
+    assert main(["decide", "--baseline", str(f)]) == 2
     assert "not hero's turn" in capsys.readouterr().err
