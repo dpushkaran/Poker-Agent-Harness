@@ -3,7 +3,7 @@
 A range is a mapping of two-card combos to weights in (0, 1]. The parser
 understands the usual shorthand::
 
-    QQ+  99-66  AKs  AKo  AK  ATs+  A5s-A2s  T9s-65s  KQo:0.5
+    QQ+  99-66  AKs  AKo  AK  ATs+  A5s-A2s  T9s-65s  KQo:0.5  AhKd
 
 Default ranges are deliberately looser than standard online ranges since
 this is a home game; any of them can be overridden per opponent.
@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from itertools import combinations
 
-from poker_agent.cards import RANKS, Card, rank_of, suit_of
+from poker_agent.cards import RANKS, Card, CardError, parse_cards, rank_of, suit_of
 from poker_agent.state import ActionType, GameState, Street
 
 Combo = tuple[Card, Card]  # (higher id, lower id)
@@ -48,6 +48,8 @@ _TOKEN = re.compile(
     r"^(?P<a>[2-9TJQKA])(?P<b>[2-9TJQKA])(?P<k>[so])?"
     r"(?:(?P<plus>\+)|-(?P<c>[2-9TJQKA])(?P<d>[2-9TJQKA])(?P<k2>[so])?)?$"
 )
+
+_SPECIFIC = re.compile(r"^[2-9TJQKA][cdhs][2-9TJQKA][cdhs]$")
 
 
 def _expand_token(tok: str) -> list[tuple[int, int, str | None]]:
@@ -103,7 +105,15 @@ def parse_range(text: str) -> Range:
             weight = float(w)
             if not 0 < weight <= 1:
                 raise RangeError(f"weight must be in (0, 1]: {raw!r}")
-        for hi, lo, kind in _expand_token(tok.strip()):
+        tok = tok.strip()
+        if _SPECIFIC.match(tok):
+            try:
+                a, b = parse_cards(tok)
+            except CardError as e:
+                raise RangeError(str(e)) from None
+            out[combo(a, b)] = weight
+            continue
+        for hi, lo, kind in _expand_token(tok):
             for c in _class_combos(hi, lo, kind):
                 out[c] = weight
     if not out:

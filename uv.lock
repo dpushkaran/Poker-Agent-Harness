@@ -39,6 +39,26 @@ wheels = [
 ]
 
 [[package]]
+name = "phevaluator"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/fa/de863004b3f3c3ec5b3959b91e74a8fad94165717e88f13a8dc997f6424c/phevaluator-0.6.0.tar.gz", hash = "sha256:3fba3a05c2ef82fab969dcc1ac8f623f4b0d0a00c36493ca1f60838d205403a7", size = 8044415, upload-time = "2026-07-11T01:14:26.966Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/19/f8707a60127ec017bf14157220800bf4e792f46124d9eec977a4d766e287/phevaluator-0.6.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:8de9990979a23c0d22f33cb6a750f3c72bed3f374298d40ee5ca4696785e5098", size = 3659673, upload-time = "2026-07-11T01:14:04.391Z" },
+    { url = "https://files.pythonhosted.org/packages/59/de/22b4ecb0b0cf2883f799513c06aa0b095068c57859037d8a05cda5802120/phevaluator-0.6.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:347927744a49dd637453a54bd92991623626e527f5eff0c29cae4bbbe3faf879", size = 3901911, upload-time = "2026-07-11T01:14:06.248Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/b5/d23931fa85c63eaef4b7042fe79e64eaf67eedae1195002b7b84a007e75c/phevaluator-0.6.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:4d6c26a0ea8846e8c694f71897ef42a611389dc93473057f37e3fb5c81ed1da3", size = 3670842, upload-time = "2026-07-11T01:14:07.947Z" },
+    { url = "https://files.pythonhosted.org/packages/50/d8/72d182159747256e60d3e60a6c78aab61d22158ff913f4c0c2d0e7898e90/phevaluator-0.6.0-cp312-cp312-win_amd64.whl", hash = "sha256:840c07870f68a4e0d8415c16124c2e0bae794cc61ffd15109b2b7d6b270085c4", size = 3661394, upload-time = "2026-07-11T01:14:09.494Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/c1/5021d9cbd9504cc13d88e7b078db3e345cbea9c1752852ce5d7cc43eb83c/phevaluator-0.6.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:568a53e9f1eb9595ad6372f9b23aea38968571d2c529d6e88e6140c4af07f6da", size = 3659671, upload-time = "2026-07-11T01:14:11.488Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/d3/553634084a57a9f7be27bd8e05c291c14721739edd475877947e0496af7d/phevaluator-0.6.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:12de81a114a007541f079ef8368f332b6d753abbff4fe1075057dd23967a48c1", size = 3901908, upload-time = "2026-07-11T01:14:13.282Z" },
+    { url = "https://files.pythonhosted.org/packages/45/e9/2024f24fc4a0922019cfee2666d12c5fca72d2148d8846a07df32ca6a1c0/phevaluator-0.6.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:2992597d529848a9abb2146b26cb80782f9be6a9584a1409385f4533e5044ffa", size = 3670877, upload-time = "2026-07-11T01:14:15.591Z" },
+    { url = "https://files.pythonhosted.org/packages/62/bf/76eff5b0f16a5c0b53f1964e149df20fe30876dfc7963b2f7ac0a5b0157b/phevaluator-0.6.0-cp313-cp313-win_amd64.whl", hash = "sha256:f20b3b8d03a47152b2a302727c2e67adf8b77ea2505db3d2eb85ba51d1e5ad51", size = 3661389, upload-time = "2026-07-11T01:14:17.158Z" },
+    { url = "https://files.pythonhosted.org/packages/05/d2/06ecc43db2a4dfc837a92c7d9606c2ae65cbe296d0974a42ab66d49976cf/phevaluator-0.6.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:0a438d85246f272f85aca1bbd989febc0fca0b65dbddfaf004c5cefbe6091fc9", size = 3659726, upload-time = "2026-07-11T01:14:19.145Z" },
+    { url = "https://files.pythonhosted.org/packages/97/8f/92c1ca3a71cb8bc8f5e3ab55d0986efd493af9b25a236dc6cf8c28ffca47/phevaluator-0.6.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:ebefef82fdd49ae6b0325e014880104bf4de7ff73ce1ec536a57f4c3e3ff2b17", size = 3901916, upload-time = "2026-07-11T01:14:20.907Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/2e/2aadf96b56b2230eae52fd8a34a309bd30e0dd6c2b8fbfff18c2c5bcf5d5/phevaluator-0.6.0-cp314-cp314-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:4e8e028a1a810bfa8ca80fab72ce33b5282928e79f0151934b7dcf52b37fb8c4", size = 3670933, upload-time = "2026-07-11T01:14:22.797Z" },
+    { url = "https://files.pythonhosted.org/packages/26/1a/f55d5f819a4089516fd8cabf8107c98e7ca0a081f69b14e619d4de4fee19/phevaluator-0.6.0-cp314-cp314-win_amd64.whl", hash = "sha256:f67868bd9a19ceb5d3019a8237d4062a7fcec0b890da875c35c2286e46c6d463", size = 3706187, upload-time = "2026-07-11T01:14:24.812Z" },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -52,6 +72,7 @@ name = "poker-agent"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "phevaluator" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
@@ -63,6 +84,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "phevaluator", specifier = ">=0.6.0" },
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]

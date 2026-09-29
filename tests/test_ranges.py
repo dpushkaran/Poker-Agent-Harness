@@ -69,3 +69,10 @@ def test_infer_preflop_ranges():
     assert infer_preflop_range(st, 5) == ("MP open-raise", OPEN_RANGES["MP"])
     assert infer_preflop_range(st, 6) == ("HJ 3-bet", THREE_BET_RANGE)
     assert infer_preflop_range(st, 3)[1] == "any"
+
+
+def test_specific_combos():
+    r = parse_range("AhKd, QsQc:0.5")
+    assert len(r) == 2
+    with pytest.raises(RangeError, match="duplicate"):
+        parse_range("AhAh")
