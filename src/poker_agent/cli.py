@@ -86,6 +86,32 @@ def cmd_decide(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_eval(args: argparse.Namespace) -> int:
+    from poker_agent.eval.runner import (
+        load_scenarios, render_report, run_eval, summarize, write_results,
+    )
+
+    settings = load_settings(args.config)
+    if args.prompt:
+        settings.llm.prompt_version = args.prompt
+    settings.llm.think = args.think
+    if args.unconstrained:
+        settings.llm.constrain_actions = False
+    scenarios = load_scenarios(Path(args.scenarios), tags=args.tags, ids=args.ids)
+    if not scenarios:
+        print("no scenarios matched", file=sys.stderr)
+        return 2
+    models = [] if args.baseline_only else (args.models or [settings.llm.model])
+    records = run_eval(scenarios, settings, models, repeats=args.repeats)
+    report = render_report(records, scenarios, settings, args.repeats)
+    md, csv_path = write_results(records, report)
+    for row in summarize(records):
+        agree = row["action_agreement"]
+        print(f"{row['setting']}: {agree:.0%} action agreement over {row['runs']} runs")
+    print(f"report: {md}\nruns:   {csv_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="poker-agent", description=__doc__)
     p.add_argument("--config", default=None, help="path to config.toml")
@@ -98,6 +124,19 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--model", help="override the Ollama model from config")
     d.add_argument("--think", action="store_true", help="enable model thinking (slower)")
     d.set_defaults(func=cmd_decide)
+
+    e = sub.add_parser("eval", help="score models on labeled scenarios")
+    e.add_argument("--models", type=lambda v: v.split(","), help="comma-separated Ollama models")
+    e.add_argument("--prompt", help="prompt version, e.g. v1")
+    e.add_argument("--repeats", type=int, default=1)
+    e.add_argument("--think", action="store_true", help="enable model thinking")
+    e.add_argument("--unconstrained", action="store_true",
+                   help="don't restrict the schema to legal actions (measures raw legality)")
+    e.add_argument("--tags", type=lambda v: v.split(","), help="only scenarios with these tags")
+    e.add_argument("--ids", type=lambda v: v.split(","), help="only these scenario ids")
+    e.add_argument("--baseline-only", action="store_true")
+    e.add_argument("--scenarios", default="eval/scenarios")
+    e.set_defaults(func=cmd_eval)
     return p
 
 

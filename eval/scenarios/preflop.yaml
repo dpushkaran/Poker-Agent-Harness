@@ -1,0 +1,144 @@
+# Labeled preflop spots. Defaults: seats 1-7 with $10.00, button on seat 1
+# (SB 2, BB 3, UTG 4, MP 5, HJ 6, CO 7). `acceptable` lists every action a
+# reasonable home-game strategy could take; `best` is optional.
+
+- id: pf-utg-aa-open
+  hero: 4
+  cards: AhAd
+  acceptable: [raise]
+  amount: [0.50, 1.00]
+  tags: [preflop, open]
+
+- id: pf-utg-72o-fold
+  hero: 4
+  cards: 7h2d
+  acceptable: [fold]
+  tags: [preflop, open]
+
+- id: pf-utg-q9o-fold
+  hero: 4
+  cards: Qh9d
+  acceptable: [fold]
+  tags: [preflop, open]
+
+- id: pf-btn-a5s-steal
+  hero: 1
+  cards: As5s
+  actions: [pf 4 fold, pf 5 fold, pf 6 fold, pf 7 fold]
+  acceptable: [raise]
+  amount: [0.40, 0.80]
+  tags: [preflop, open]
+
+- id: pf-co-isolate-aqo
+  description: Two limpers; AQo should raise to isolate, not overlimp.
+  hero: 7
+  cards: AhQd
+  actions: [pf 4 call, pf 5 call, pf 6 fold]
+  acceptable: [raise]
+  amount: [0.80, 1.60]
+  tags: [preflop, limpers]
+
+- id: pf-hj-overlimp-65s
+  hero: 6
+  cards: 6s5s
+  actions: [pf 4 call, pf 5 call]
+  acceptable: [call, fold]
+  best: call
+  tags: [preflop, limpers]
+
+- id: pf-bb-check-trash
+  hero: 3
+  cards: 8c3d
+  actions: [pf 4 call, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 fold, pf 2 call]
+  acceptable: [check]
+  tags: [preflop, limpers, blinds]
+
+- id: pf-bb-raise-aks-vs-limps
+  hero: 3
+  cards: AhKh
+  actions: [pf 4 call, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 fold, pf 2 call]
+  acceptable: [raise]
+  amount: [0.80, 1.60]
+  tags: [preflop, limpers, blinds]
+
+- id: pf-kk-3bet-vs-utg
+  hero: 5
+  cards: KhKd
+  actions: [pf 4 raise 0.60]
+  acceptable: [raise]
+  amount: [1.50, 2.60]
+  tags: [preflop, vs-open]
+
+- id: pf-aqs-vs-utg-open
+  hero: 7
+  cards: AsQs
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold]
+  acceptable: [call, raise]
+  tags: [preflop, vs-open]
+
+- id: pf-j8o-vs-open-fold
+  hero: 6
+  cards: Jh8d
+  actions: [pf 4 raise 0.60, pf 5 fold]
+  acceptable: [fold]
+  tags: [preflop, vs-open]
+
+- id: pf-bb-defend-97s-vs-btn
+  hero: 3
+  cards: 9s7s
+  actions: [pf 4 fold, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 raise 0.60, pf 2 fold]
+  acceptable: [call, raise]
+  best: call
+  tags: [preflop, vs-open, blinds]
+
+- id: pf-bb-k4o-vs-utg-big-open
+  hero: 3
+  cards: Kh4d
+  actions: [pf 4 raise 1.00, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 fold, pf 2 fold]
+  acceptable: [fold]
+  tags: [preflop, vs-open, blinds]
+
+- id: pf-qq-vs-3bet
+  hero: 4
+  cards: QhQd
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 raise 2.00, pf 7 fold, pf 1 fold, pf 2 fold, pf 3 fold]
+  acceptable: [call, raise, all_in]
+  tags: [preflop, vs-3bet]
+
+- id: pf-ajo-vs-3bet-fold
+  hero: 4
+  cards: AhJd
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 raise 2.00, pf 7 fold, pf 1 fold, pf 2 fold, pf 3 fold]
+  acceptable: [fold]
+  tags: [preflop, vs-3bet]
+
+- id: pf-short-stack-ato-btn
+  description: 15bb on the button, folded to hero.
+  hero: 1
+  cards: AhTd
+  players: {1: 3.00, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10}
+  actions: [pf 4 fold, pf 5 fold, pf 6 fold, pf 7 fold]
+  acceptable: [raise, all_in]
+  tags: [preflop, open, short-stack]
+
+- id: pf-sb-complete-98s-multiway
+  description: Five limpers; raising a speculative hand out of position just bloats the pot.
+  hero: 2
+  cards: 9h8h
+  actions: [pf 4 call, pf 5 call, pf 6 call, pf 7 call, pf 1 call]
+  acceptable: [call]
+  tags: [preflop, limpers, blinds]
+
+- id: pf-aa-facing-shove
+  hero: 7
+  cards: AhAd
+  actions: [pf 4 all_in, pf 5 fold, pf 6 fold]
+  acceptable: [call, all_in]
+  tags: [preflop, all-in]
+
+- id: pf-kqo-facing-shove
+  hero: 7
+  cards: KhQd
+  actions: [pf 4 all_in, pf 5 fold, pf 6 fold]
+  acceptable: [fold]
+  tags: [preflop, all-in]

@@ -1,0 +1,31 @@
+# Labeled turn spots. Defaults: seats 1-7 with $10.00, button on seat 1
+# (SB 2, BB 3, UTG 4, MP 5, HJ 6, CO 7).
+
+- id: t-tptk-big-bet-flush-completes
+  description: Three hearts on board, hero has no heart and faces a near-pot bet.
+  hero: 4
+  cards: AsKd
+  board: Kh7h2c4h
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 call, pf 1 fold, pf 2 fold, pf 3 fold,
+            f 4 bet 0.80, f 7 call, t 4 check, t 7 bet 3.00]
+  acceptable: [call, fold]
+  tags: [turn, bluff-catch]
+
+- id: t-nut-flush-draw-facing-shove
+  hero: 1
+  cards: Ah5h
+  board: Kh8h3c2d
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 call, pf 2 fold, pf 3 fold,
+            f 4 bet 0.80, f 1 call, t 4 all_in]
+  acceptable: [fold]
+  tags: [turn, draw, all-in]
+
+- id: t-top-set-checked-to
+  hero: 4
+  cards: QhQc
+  board: Qd6c2h9s
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 fold, pf 2 fold, pf 3 call,
+            f 3 check, f 4 bet 0.70, f 3 call, t 3 check]
+  acceptable: [bet]
+  amount: [1.20, 3.00]
+  tags: [turn, value]

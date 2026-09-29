@@ -1,0 +1,30 @@
+# Labeled river spots. Defaults: seats 1-7 with $10.00, button on seat 1
+# (SB 2, BB 3, UTG 4, MP 5, HJ 6, CO 7).
+
+- id: r-second-pair-vs-small-bet
+  hero: 7
+  cards: Tc9c
+  board: Ks9d4c2h6s
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 call, pf 1 fold, pf 2 fold, pf 3 fold,
+            f 4 bet 0.80, f 7 call, t 4 check, t 7 check, r 4 bet 0.80]
+  acceptable: [call]
+  tags: [river, bluff-catch]
+
+- id: r-missed-draw-vs-bet
+  hero: 1
+  cards: Ah5h
+  board: Kh8h3c2dJc
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 call, pf 2 fold, pf 3 fold,
+            f 4 bet 0.80, f 1 call, t 4 check, t 1 check, r 4 bet 1.50]
+  acceptable: [fold]
+  tags: [river]
+
+- id: r-nut-flush-value
+  hero: 1
+  cards: Ah5h
+  board: Kh8h3c2d9h
+  actions: [pf 4 raise 0.60, pf 5 fold, pf 6 fold, pf 7 fold, pf 1 call, pf 2 fold, pf 3 fold,
+            f 4 bet 0.80, f 1 call, t 4 check, t 1 check, r 4 check]
+  acceptable: [bet, all_in]
+  amount: [1.50, 8.60]
+  tags: [river, value]
