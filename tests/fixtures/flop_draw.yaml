@@ -1,0 +1,24 @@
+# 7-handed, hero on the button with a nut flush draw facing a flop c-bet.
+players:
+  - {seat: 1, stack: 10.00}
+  - {seat: 2, stack: 12.40}
+  - {seat: 3, stack: 8.00}
+  - {seat: 4, stack: 10.00}
+  - {seat: 5, stack: 15.20}
+  - {seat: 6, stack: 10.00}
+  - {seat: 7, stack: 9.10}
+button_seat: 7
+hero_seat: 7
+hole_cards: Ah5h
+board: Kh8h3c
+actions:
+  - {street: preflop, seat: 3, type: fold}
+  - {street: preflop, seat: 4, type: raise, amount: 0.60}
+  - {street: preflop, seat: 5, type: fold}
+  - {street: preflop, seat: 6, type: fold}
+  - {street: preflop, seat: 7, type: call}
+  - {street: preflop, seat: 1, type: fold}
+  - {street: preflop, seat: 2, type: fold}
+  - {street: flop, seat: 4, type: bet, amount: 0.80}
+opponent_notes:
+  4: "c-bets almost every flop"

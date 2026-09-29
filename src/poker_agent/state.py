@@ -98,6 +98,10 @@ class GameState(BaseModel):
     opponent_notes: dict[int, str] = Field(
         default_factory=dict, description="Free-text reads per seat, e.g. 'calls too much'"
     )
+    opponent_ranges: dict[int, str] = Field(
+        default_factory=dict,
+        description="Per-seat preflop range overrides in range notation, e.g. {5: '22+, A2s+'}",
+    )
 
     @field_validator("hole_cards", "board", mode="before")
     @classmethod
