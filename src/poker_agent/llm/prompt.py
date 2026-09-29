@@ -16,7 +16,7 @@ from poker_agent.state import ActionType, GameState, Street
 
 SYSTEM_V1 = """\
 You are a poker strategy assistant for a friendly home no-limit Texas Hold'em cash game \
-({sb:.2f}/{bb:.2f} blinds, {buy_in:.0f}-dollar buy-ins, up to 7 players).
+({sb:.2f}/{bb:.2f} blinds, up to 7 players).
 
 Typical home-game tendencies: players are loose and passive. They limp and call too often, \
 rarely bluff with big bets or raises, and pay off value bets. So value bet thinner and larger, \
@@ -257,9 +257,8 @@ def render_state(state: GameState, a: Analysis, version: str = DEFAULT_PROMPT) -
     return "\n".join(lines)
 
 
-def build_messages(state: GameState, a: Analysis, version: str = DEFAULT_PROMPT,
-                   buy_in: float = 10.0) -> list[dict]:
-    system = PROMPTS[version].format(sb=state.blinds.small, bb=state.blinds.big, buy_in=buy_in)
+def build_messages(state: GameState, a: Analysis, version: str = DEFAULT_PROMPT) -> list[dict]:
+    system = PROMPTS[version].format(sb=state.blinds.small, bb=state.blinds.big)
     return [
         {"role": "system", "content": system},
         {"role": "user", "content": render_state(state, a, version)},

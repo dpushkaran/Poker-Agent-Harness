@@ -105,6 +105,13 @@ class Action(BaseModel):
 class Blinds(BaseModel):
     small: float = 0.10
     big: float = 0.20
+    increment: float | None = Field(
+        default=None, gt=0, description="Smallest chip used for sizing; defaults to the small blind"
+    )
+
+    @property
+    def chip(self) -> float:
+        return self.increment or self.small
 
 
 class GameState(BaseModel):

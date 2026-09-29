@@ -51,6 +51,8 @@ class Scenario(BaseModel):
             "board": data.pop("board", ""),
             "actions": data.pop("actions", []),
             "opponent_notes": data.pop("opponent_notes", {}),
+            # Scenario amounts are written for 0.10/0.20 unless a scenario says otherwise.
+            "blinds": data.pop("blinds", {"small": 0.10, "big": 0.20}),
         }
         return data
 

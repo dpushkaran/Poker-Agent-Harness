@@ -69,7 +69,7 @@ def decide(
     client = client or make_client(settings)
     rec.model = client.model
     rec.prompt_version = cfg.prompt_version
-    messages = build_messages(state, analysis, cfg.prompt_version, settings.game.buy_in)
+    messages = build_messages(state, analysis, cfg.prompt_version)
     schema = decision_schema(analysis.legal if cfg.constrain_actions else None)
 
     for attempt in range(1 + cfg.max_retries):
@@ -83,7 +83,7 @@ def decide(
             break
         rec.llm_latency_s += reply.latency_s
         rec.raw_outputs.append(reply.content)
-        result = validate_decision(reply.content, analysis.legal, settings.game.chip_increment)
+        result = validate_decision(reply.content, analysis.legal)
         if rec.valid_first_try is None:
             rec.valid_first_try = result.ok
         if result.ok:

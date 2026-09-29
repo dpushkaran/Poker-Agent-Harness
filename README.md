@@ -4,7 +4,7 @@ A strategy aid for a friendly home no-limit Texas Hold'em game. You enter the ha
 
 All the precise math is done by ordinary, tested code, not the model. That includes the legal actions, pot odds, SPR, hand strength, outs, and equity against estimated opponent ranges. The model reasons over those numbers. Its answer is then validated against the legal moves before it is shown. If the model is down or keeps answering illegally, a deterministic baseline policy answers instead and is labeled as such.
 
-Built for $0.10/$0.20 blinds, $10 buy-ins and up to 7 players. These defaults live in `config.toml`.
+Configured for $1/$2 blinds, $1,000 buy-ins (500 big blinds) and up to 7 players. Change these in the `[game]` section of `config.toml`. Bet sizes are rounded to the smallest chip, which defaults to the small blind. The labeled eval scenarios keep their own $0.10/$0.20 blinds, so they don't change when the config does.
 
 ## Setup (macOS)
 
@@ -50,6 +50,7 @@ A hand file is short YAML:
 
 ```yaml
 players: {1: 10.00, 2: 12.40, 3: 8.00, 4: 10.00, 5: 15.20, 6: 10.00, 7: 9.10}
+blinds: {small: 0.10, big: 0.20}   # omit to use the blinds from config.toml
 button_seat: 7
 hero_seat: 7
 hole_cards: Ah5h

@@ -90,9 +90,9 @@ def create_app(settings: Settings | None = None, client=None) -> FastAPI:
     @app.get("/api/config")
     def config():
         g = settings.game
-        return {"small_blind": g.small_blind, "big_blind": g.big_blind, "buy_in": g.buy_in,
-                "max_players": g.max_players, "chip_increment": g.chip_increment,
-                "model": settings.llm.model}
+        return {"small_blind": g.small_blind, "big_blind": g.big_blind,
+                "default_stack": g.default_stack, "max_players": g.max_players,
+                "chip_increment": g.chip, "model": settings.llm.model}
 
     @app.get("/api/health")
     def health():

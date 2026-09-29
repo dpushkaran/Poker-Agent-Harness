@@ -154,3 +154,13 @@ def test_legal_actions_for_other_seat():
     assert la.call_amount == 0.60 and la.min_to == 1.00
     with pytest.raises(NotHerosTurn, match="not seat 6's turn"):
         legal_actions(st, seat=6)
+
+
+def test_snap_uses_table_chip_size():
+    st = GameState.model_validate(dict(
+        players={1: 1000, 2: 1000, 3: 1000}, button_seat=1, hero_seat=1, hole_cards="AhKd",
+        blinds={"small": 1, "big": 2},
+    ))
+    la = legal_actions(st)
+    assert la.increment == 1.0 and la.min_to == 4.0
+    assert la.snap(7.3) == 7.0

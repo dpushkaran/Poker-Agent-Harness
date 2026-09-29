@@ -10,15 +10,20 @@ from pathlib import Path
 import yaml
 
 from poker_agent.analysis import Analysis
-from poker_agent.config import load_settings
+from poker_agent.config import Settings, load_settings
 from poker_agent.decide import Recommendation, decide
 from poker_agent.decision import Decision
 from poker_agent.rules import IllegalAction, NotHerosTurn
 from poker_agent.state import GameState
 
 
-def load_state(path: str | Path) -> GameState:
-    return GameState.model_validate(yaml.safe_load(Path(path).read_text()))
+def load_state(path: str | Path, settings: Settings | None = None) -> GameState:
+    """Load a hand file; hands without a `blinds` entry use the configured blinds."""
+    data = yaml.safe_load(Path(path).read_text())
+    if settings is not None and "blinds" not in data:
+        g = settings.game
+        data["blinds"] = {"small": g.small_blind, "big": g.big_blind, "increment": g.chip}
+    return GameState.model_validate(data)
 
 
 def format_analysis(a: Analysis) -> str:
@@ -74,7 +79,7 @@ def cmd_decide(args: argparse.Namespace) -> int:
     if args.think:
         settings.llm.think = True
     try:
-        state = load_state(args.file)
+        state = load_state(args.file, settings)
         rec = decide(state, settings, use_llm=not args.baseline)
     except (IllegalAction, NotHerosTurn, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)

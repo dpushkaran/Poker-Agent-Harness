@@ -8,6 +8,7 @@ players:
   - {seat: 6, stack: 10.00}
   - {seat: 7, stack: 9.10}
 button_seat: 7
+blinds: {small: 0.10, big: 0.20}
 hero_seat: 7
 hole_cards: Ah5h
 board: Kh8h3c

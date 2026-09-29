@@ -177,7 +177,7 @@ const RANKS = "AKQJT98765432";
 const SUITS = [["s", "♠"], ["h", "♥"], ["d", "♦"], ["c", "♣"]];
 const STORE_KEY = "poker-agent-v1";
 
-let CONFIG = { small_blind: 0.1, big_blind: 0.2, max_players: 7, chip_increment: 0.1 };
+let CONFIG = { small_blind: 0.1, big_blind: 0.2, default_stack: 20, max_players: 7, chip_increment: 0.1 };
 const S = {
   setup: null,                  // {seats: [{seat, on, stack, name, note, range}], hero, button}
   hand: { hole: [], board: [], pending: [], actions: [], id: newHandId() },
@@ -200,13 +200,17 @@ function cardHTML(c) {
 
 // ---- persistence (per-device convenience only) --------------------------
 function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ setup: S.setup, hand: S.hand })); } catch (e) { /* ignore */ }
+  const blinds = [CONFIG.small_blind, CONFIG.big_blind];
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ setup: S.setup, hand: S.hand, blinds })); } catch (e) { /* ignore */ }
 }
 function load() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
+    // Stacks saved under different blinds would be meaningless; start fresh.
+    const same = data.blinds && data.blinds[0] === CONFIG.small_blind && data.blinds[1] === CONFIG.big_blind;
+    if (!same) return;
     if (data.setup) S.setup = data.setup;
     if (data.hand) S.hand = { pending: [], ...data.hand };
   } catch (e) { /* ignore */ }
@@ -214,7 +218,7 @@ function load() {
 function defaultSetup() {
   const seats = [];
   for (let i = 1; i <= CONFIG.max_players; i++) {
-    seats.push({ seat: i, on: true, stack: CONFIG.buy_in || 10, name: "", note: "", range: "" });
+    seats.push({ seat: i, on: true, stack: CONFIG.default_stack, name: "", note: "", range: "" });
   }
   return { seats, hero: 1, button: 1 };
 }
@@ -244,7 +248,7 @@ function gameState() {
     hole_cards: S.hand.hole,
     board: S.hand.board,
     actions: S.hand.actions,
-    blinds: { small: CONFIG.small_blind, big: CONFIG.big_blind },
+    blinds: { small: CONFIG.small_blind, big: CONFIG.big_blind, increment: CONFIG.chip_increment },
     opponent_notes: notes,
     opponent_ranges: ranges,
   };
@@ -280,7 +284,7 @@ function renderSetup() {
     <tr data-seat="${s.seat}">
       <td><b>${s.seat}</b></td>
       <td><input type="checkbox" data-f="on" ${s.on ? "checked" : ""} aria-label="seat ${s.seat} playing"></td>
-      <td><input type="number" step="0.1" min="0.1" data-f="stack" value="${s.stack}" aria-label="seat ${s.seat} stack"></td>
+      <td><input type="number" step="${CONFIG.chip_increment}" min="${CONFIG.chip_increment}" data-f="stack" value="${s.stack}" aria-label="seat ${s.seat} stack"></td>
       <td><input type="radio" name="hero" data-f="hero" ${S.setup.hero === s.seat ? "checked" : ""} aria-label="hero seat ${s.seat}"></td>
       <td><input type="radio" name="button" data-f="button" ${S.setup.button === s.seat ? "checked" : ""} aria-label="button seat ${s.seat}"></td>
       <td><button data-f="more" style="min-height:32px;padding:2px 8px" aria-label="notes for seat ${s.seat}">✎</button></td>

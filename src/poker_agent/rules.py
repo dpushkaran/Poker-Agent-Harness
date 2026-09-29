@@ -257,11 +257,13 @@ class LegalActions(BaseModel):
     max_to: float | None
     hero_stack: float
     hero_committed_street: float
+    increment: float = 0.10  # smallest chip, for rounding sizes
 
-    def snap(self, to: float, increment: float = 0.10) -> float:
+    def snap(self, to: float, increment: float | None = None) -> float:
         """Round a bet/raise 'to' amount to the chip increment and clamp it to legal bounds."""
         if self.min_to is None or self.max_to is None:
             raise ValueError("no bet or raise is available")
+        increment = increment or self.increment
         snapped = round(round(to / increment) * increment, 2)
         return min(max(snapped, self.min_to), self.max_to)
 
@@ -321,4 +323,5 @@ def legal_actions(
         max_to=to_dollars(max_to) if (can_bet or can_raise) else None,
         hero_stack=to_dollars(s.stack),
         hero_committed_street=to_dollars(s.committed_street),
+        increment=state.blinds.chip,
     )

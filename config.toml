@@ -1,12 +1,11 @@
 # Game and runtime settings. Amounts are in dollars.
 
 [game]
-small_blind = 0.10
-big_blind = 0.20
-min_bet = 0.20
-buy_in = 10.00
+small_blind = 1.00
+big_blind = 2.00
 max_players = 7
-chip_increment = 0.10   # smallest chip denomination used for sizing
+buy_in = 1000.00         # default stack in the UI (500 big blinds)
+# chip_increment = 1.00  # optional; smallest chip for bet sizes (defaults to the small blind)
 
 [llm]
 base_url = "http://localhost:11434"

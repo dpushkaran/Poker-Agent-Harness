@@ -12,10 +12,17 @@ from pydantic import BaseModel
 class GameConfig(BaseModel):
     small_blind: float = 0.10
     big_blind: float = 0.20
-    min_bet: float = 0.20
-    buy_in: float = 10.00
+    buy_in: float | None = None  # only used as the default stack in the UI
     max_players: int = 7
-    chip_increment: float = 0.10
+    chip_increment: float | None = None  # defaults to the small blind
+
+    @property
+    def default_stack(self) -> float:
+        return self.buy_in or 100 * self.big_blind
+
+    @property
+    def chip(self) -> float:
+        return self.chip_increment or self.small_blind
 
 
 class LLMConfig(BaseModel):

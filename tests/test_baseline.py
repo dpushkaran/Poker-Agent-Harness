@@ -85,3 +85,12 @@ def test_no_isolation_raise_with_speculative_hand_into_many_limpers():
     acts = [("preflop", s, "call") for s in (4, 5, 6, 7, 1)]
     d = decide(spot("9h8h", acts, hero=2))
     assert d.action is Move.CALL
+
+
+def test_cli_hand_without_blinds_uses_config(tmp_path, capsys):
+    f = tmp_path / "h.yaml"
+    f.write_text("players: {1: 1000, 2: 1000, 3: 1000}\nbutton_seat: 1\nhero_seat: 1\n"
+                 "hole_cards: AhAd\n")
+    assert main(["decide", "--baseline", str(f)]) == 0  # repo config: $1/$2
+    out = capsys.readouterr().out
+    assert "RAISE to 6.00" in out

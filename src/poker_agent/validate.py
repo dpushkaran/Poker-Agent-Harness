@@ -42,7 +42,7 @@ def parse_decision(raw: str | dict) -> tuple[Decision | None, str | None]:
 
 
 def validate_decision(
-    raw: str | dict, legal: LegalActions, increment: float = 0.10
+    raw: str | dict, legal: LegalActions, increment: float | None = None
 ) -> ValidationResult:
     d, err = parse_decision(raw)
     if d is None:
