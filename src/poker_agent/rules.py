@@ -282,24 +282,28 @@ class LegalActions(BaseModel):
         return out
 
 
-def legal_actions(state: GameState, table: TableState | None = None) -> LegalActions:
+def legal_actions(
+    state: GameState, table: TableState | None = None, seat: int | None = None
+) -> LegalActions:
+    """Legal options for `seat` (default: the hero), who must be next to act."""
     table = table or replay(state)
-    hero = state.hero_seat
+    seat = state.hero_seat if seat is None else seat
+    who = "hero" if seat == state.hero_seat else f"seat {seat}"
     if table.hand_over:
         raise NotHerosTurn("the hand is over")
-    if table.seats[hero].folded:
-        raise NotHerosTurn("hero has folded")
-    if table.to_act != hero:
-        who = "nobody (betting round closed)" if table.to_act is None else f"seat {table.to_act}"
-        raise NotHerosTurn(f"it is not hero's turn: next to act is {who}")
+    if table.seats[seat].folded:
+        raise NotHerosTurn(f"{who} has folded")
+    if table.to_act != seat:
+        nxt = "nobody (betting round closed)" if table.to_act is None else f"seat {table.to_act}"
+        raise NotHerosTurn(f"it is not {who}'s turn: next to act is {nxt}")
 
-    s = table.seats[hero]
-    to_call = table.to_call(hero)
+    s = table.seats[seat]
+    to_call = table.to_call(seat)
     max_to = s.committed_street + s.stack
     can_bet = table.current_bet == 0 and s.stack > 0 and any(
-        table.seats[o].active for o in table.order if o != hero
+        table.seats[o].active for o in table.order if o != seat
     )
-    can_raise = table.current_bet > 0 and table.can_raise(hero)
+    can_raise = table.current_bet > 0 and table.can_raise(seat)
     if can_bet:
         min_to = min(table.big_blind, max_to)
     elif can_raise:

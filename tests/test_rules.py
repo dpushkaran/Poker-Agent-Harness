@@ -146,3 +146,11 @@ def test_snap_rounds_and_clamps():
     assert la.snap(0.63) == 0.60
     assert la.snap(0.10) == 0.40  # below min raise
     assert la.snap(50) == 10.00  # above stack
+
+
+def test_legal_actions_for_other_seat():
+    st = gs([pf(4, "raise", 0.60)], hero=7)
+    la = legal_actions(st, seat=5)
+    assert la.call_amount == 0.60 and la.min_to == 1.00
+    with pytest.raises(NotHerosTurn, match="not seat 6's turn"):
+        legal_actions(st, seat=6)
