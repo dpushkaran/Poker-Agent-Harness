@@ -59,18 +59,41 @@ class Player(BaseModel):
     name: str | None = None
 
 
+STREET_ALIASES = {
+    "pf": Street.PREFLOP, "pre": Street.PREFLOP, "preflop": Street.PREFLOP,
+    "f": Street.FLOP, "flop": Street.FLOP,
+    "t": Street.TURN, "turn": Street.TURN,
+    "r": Street.RIVER, "river": Street.RIVER,
+}
+
+
 class Action(BaseModel):
     """One betting action.
 
     For ``bet`` and ``raise``, ``amount`` is the player's *total* commitment
     on this street after the action ("raise to"). It is ignored for other
     action types, whose sizes are implied by the state.
+
+    Also accepts a compact string: ``"pf 4 raise 0.60"``, ``"flop 3 check"``.
     """
 
     street: Street
     seat: int
     type: ActionType
     amount: float | None = Field(default=None, ge=0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_string(cls, data):
+        if not isinstance(data, str):
+            return data
+        parts = data.split()
+        if len(parts) not in (3, 4) or parts[0].lower() not in STREET_ALIASES:
+            raise ValueError(f"expected '<street> <seat> <action> [amount]', got {data!r}")
+        out = {"street": STREET_ALIASES[parts[0].lower()], "seat": parts[1], "type": parts[2].lower()}
+        if len(parts) == 4:
+            out["amount"] = parts[3]
+        return out
 
     @model_validator(mode="after")
     def _amount_required(self) -> Action:
@@ -85,6 +108,8 @@ class Blinds(BaseModel):
 
 
 class GameState(BaseModel):
+    """A hand in progress. ``players`` may also be given as ``{seat: stack}``."""
+
     players: list[Player] = Field(min_length=2, max_length=9)
     button_seat: int
     hero_seat: int
@@ -102,6 +127,13 @@ class GameState(BaseModel):
         default_factory=dict,
         description="Per-seat preflop range overrides in range notation, e.g. {5: '22+, A2s+'}",
     )
+
+    @field_validator("players", mode="before")
+    @classmethod
+    def _players_from_mapping(cls, v):
+        if isinstance(v, dict):
+            return [{"seat": int(seat), "stack": stack} for seat, stack in v.items()]
+        return v
 
     @field_validator("hole_cards", "board", mode="before")
     @classmethod

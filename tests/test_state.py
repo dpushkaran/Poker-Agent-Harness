@@ -64,3 +64,19 @@ def test_unknown_seats_rejected():
         make_state(hero_seat=9)
     with pytest.raises(ValidationError, match="empty seat"):
         make_state(actions=[{"street": "preflop", "seat": 9, "type": "fold"}])
+
+
+def test_compact_action_strings_and_player_mapping():
+    st = GameState.model_validate(dict(
+        players={1: 10, 2: 8.5, 3: 12},
+        button_seat=1, hero_seat=1, hole_cards="AhKd", board="Qs7c2d",
+        actions=["pf 1 raise 0.60", "pf 2 call", "preflop 3 call", "f 2 check", "flop 3 bet 0.90"],
+    ))
+    assert st.player(2).stack == 8.5
+    assert st.actions[0] == Action(street=Street.PREFLOP, seat=1, type=ActionType.RAISE, amount=0.6)
+    assert st.actions[4].street is Street.FLOP and st.actions[4].amount == 0.9
+
+
+def test_bad_compact_action():
+    with pytest.raises(ValidationError, match="expected"):
+        make_state(actions=["preflop raise"])
