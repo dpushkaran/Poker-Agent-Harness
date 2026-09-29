@@ -11,6 +11,7 @@ tracked). 34 scenarios, 2 repeats per model, temperature 0.2, Apple M5 Pro 48GB.
 | qwen3:30b-a3b, v1 | 88% | 29% | 100% | 4% | 90% | 4.0 | 15.8 |
 | qwen3:30b-a3b, v2 | **94%** | **100%** | 99% | 1% | 96% | **3.3** | 6.3 |
 | gpt-oss:20b, v2 | 96%* | 95% | 37% | 34% | 94% | 18.3 | 24.7 |
+| qwen3:32b, v2 | 94% | 95% | 100% | 1% | 99% | 20.4 | 47.5 |
 
 \* inflated: a third of gpt-oss answers failed validation and the baseline answered instead.
 Its forced reasoning likely overran the 600-token output cap.
@@ -22,4 +23,8 @@ Findings:
   unopened/limped pots, and lists concrete SIZE OPTIONS. This fixed the limping and sizing.
 - Remaining qwen3 misses: occasionally opens Q9o UTG despite "not in range", calls a
   UTG shove with KQo once, and iso-raises 65s over two limpers once.
-- Decision: default to qwen3:30b-a3b with prompt v2.
+- qwen3:32b (dense) matches the 30B MoE's accuracy with better consistency, but it is ~6x
+  slower. Its misses were different: it called a UTG shove with KQo both times, and it raised
+  or shoved top pair facing a big turn bet on a three-flush board.
+- Decision: default to qwen3:30b-a3b with prompt v2. It is as accurate and fast enough to use
+  live.
